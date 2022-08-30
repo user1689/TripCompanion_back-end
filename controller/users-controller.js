@@ -24,13 +24,14 @@ const getUsers = async (req, res, next) => {
 }
 
 const signup = async (req, res, next) => {
+  console.log(1);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(new HttpError('Invalid inputs passed, please check your data.', 422));
   }
 
   const { name, email, password } = req.body;
-
+ 
   let hasUser
   try {
     hasUser = await User.findOne({ email });
@@ -41,7 +42,7 @@ const signup = async (req, res, next) => {
   if (hasUser) {
     return next(new HttpError('Could not create user, email already exists.', 422));
   }
-
+ 
   const newUser = new User({
     name,
     email,
@@ -49,7 +50,7 @@ const signup = async (req, res, next) => {
     password,
     places: []
   });
-
+ 
   try {
     await newUser.save();
   } catch (error) {
