@@ -76,7 +76,7 @@ const createPlace = async (req, res, next) => {
     return next(new HttpError('Invalid inputs passed, please check your data.', 422));
   }
 
-  const { title, description, address, creator } = req.body;
+  const { title, description, address } = req.body;
 
   let coordinates;
   try {
@@ -91,12 +91,12 @@ const createPlace = async (req, res, next) => {
     address,
     location: coordinates,
     image: req.file.path,
-    creator
+    creator: req.userData.userId
   });
 
   let user = null
   try {
-    user = await User.findById(creator);
+    user = await User.findById(req.userData.userId);
   } catch (error) {
     return next(new HttpError('Could not find user for provided id, please try again', 500));
   }
@@ -105,7 +105,7 @@ const createPlace = async (req, res, next) => {
     return next(new HttpError('Could not find user for provided id, please try again', 404));
   }
 
-  console.log(user);
+  // console.log(user);
 
   // DUMMY_PLACES.push(newPlace);
 
