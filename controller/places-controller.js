@@ -5,6 +5,8 @@ const getCoordsForAddress = require('../utils/locations');
 const Place = require('../models/place');
 const User = require('../models/user');
 const mongoose = require('mongoose');
+const fs = require('fs');
+
 
 // let DUMMY_PLACES = [
 //   {
@@ -88,7 +90,7 @@ const createPlace = async (req, res, next) => {
     description,
     address,
     location: coordinates,
-    image: 'xxxxxxxxxx',
+    image: req.file.path,
     creator
   });
 
@@ -137,6 +139,10 @@ const updatePlaceById = async (req, res, next) => {
     return next(new HttpError('Something went wrong, could not find a place', 500));
   }
 
+  if (place.creator.toString() !== req.userData.userId) {
+    return next(new HttpError('You are not allowed to edit this place.', 401));
+  }
+
   place.title = title;
   place.description = description;
 
@@ -166,6 +172,12 @@ const deletePlaceById = async (req, res, next) => {
     return next(error);
   }
 
+  if (place.creator.id !== req.userData.userId) {
+    return next(new HttpError('You are not allowed to edit this place.', 401));
+  }
+
+  const imagePath = place.image;
+
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
@@ -177,6 +189,10 @@ const deletePlaceById = async (req, res, next) => {
   } catch (error) {
     return next(new HttpError('Something went wrong, could not find a place', 500));
   }
+
+  fs.unlink(imagePath, err => {
+    console.log(err);
+  })
 
   res.status(200).json({ message: 'Deleted place.' });
 }

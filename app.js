@@ -4,12 +4,15 @@ const placesRoutes = require('./routes/places-routes')
 const userRoutes = require('./routes/users-routes')
 const HttpError = require('./models/http-error')
 const mongoose = require('mongoose');
-
+const fs = require('fs');
+const path = require('path');
 
 const app = express()
 const port = 5999
 
 app.use(bodyParser.json());
+                          // build path
+app.use('/uploads/images', express.static(path.join('uploads', 'images')));
 
 // add header to solve Cross original resource sharing
 app.use((req, res, next) => {
@@ -30,6 +33,12 @@ app.use((req, res, next) => {
 
 // default global error handler
 app.use((error, req, res, next) => {
+  // delete image
+  if (req.file) {
+    fs.unlink(req.file.path, (err) => {
+      console.log(err);
+    });
+  }
   if (res.headersSent) {
     return next(error);
   }
